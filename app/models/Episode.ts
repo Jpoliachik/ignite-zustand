@@ -1,5 +1,3 @@
-import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
-import { withSetPropAction } from "./helpers/withSetPropAction"
 import { formatDate } from "../utils/formatDate"
 import { translate } from "../i18n"
 
@@ -11,69 +9,60 @@ interface Enclosure {
   rating: { scheme: string; value: string }
 }
 
-/**
- * This represents an episode of React Native Radio.
- */
-export const EpisodeModel = types
-  .model("Episode")
-  .props({
-    guid: types.identifier,
-    title: "",
-    pubDate: "", // Ex: 2022-08-12 21:05:36
-    link: "",
-    author: "",
-    thumbnail: "",
-    description: "",
-    content: "",
-    enclosure: types.frozen<Enclosure>(),
-    categories: types.array(types.string),
-  })
-  .actions(withSetPropAction)
-  .views((episode) => ({
-    get parsedTitleAndSubtitle() {
-      const defaultValue = { title: episode.title?.trim(), subtitle: "" }
+export type Episode = {
+  guid: string
+  title: string
+  pubDate: string
+  link: string
+  author: string
+  thumbnail: string
+  description: string
+  content: string
+  enclosure: Enclosure
+  categories: string[]
+}
 
-      if (!defaultValue.title) return defaultValue
+export const getParsedTitleAndSubtitle = (episode: Episode) => {
+  const defaultValue = { title: episode.title?.trim(), subtitle: "" }
 
-      const titleMatches = defaultValue.title.match(/^(RNR.*\d)(?: - )(.*$)/)
+  if (!defaultValue.title) return defaultValue
 
-      if (!titleMatches || titleMatches.length !== 3) return defaultValue
+  const titleMatches = defaultValue.title.match(/^(RNR.*\d)(?: - )(.*$)/)
 
-      return { title: titleMatches[1], subtitle: titleMatches[2] }
-    },
-    get datePublished() {
-      try {
-        const formatted = formatDate(episode.pubDate)
-        return {
-          textLabel: formatted,
-          accessibilityLabel: translate("demoPodcastListScreen.accessibility.publishLabel", {
-            date: formatted,
-          }),
-        }
-      } catch (error) {
-        return { textLabel: "", accessibilityLabel: "" }
-      }
-    },
-    get duration() {
-      const seconds = Number(episode.enclosure.duration)
-      const h = Math.floor(seconds / 3600)
-      const m = Math.floor((seconds % 3600) / 60)
-      const s = Math.floor((seconds % 3600) % 60)
+  if (!titleMatches || titleMatches.length !== 3) return defaultValue
 
-      const hDisplay = h > 0 ? `${h}:` : ""
-      const mDisplay = m > 0 ? `${m}:` : ""
-      const sDisplay = s > 0 ? s : ""
-      return {
-        textLabel: hDisplay + mDisplay + sDisplay,
-        accessibilityLabel: translate("demoPodcastListScreen.accessibility.durationLabel", {
-          hours: h,
-          minutes: m,
-          seconds: s,
-        }),
-      }
-    },
-  }))
+  return { title: titleMatches[1], subtitle: titleMatches[2] }
+}
 
-export interface Episode extends Instance<typeof EpisodeModel> {}
-export interface EpisodeSnapshotOut extends SnapshotOut<typeof EpisodeModel> {}
-export interface EpisodeSnapshotIn extends SnapshotIn<typeof EpisodeModel> {}
+export const getDatePublished = (episode: Episode) => {
+  try {
+    const formatted = formatDate(episode.pubDate)
+    return {
+      textLabel: formatted,
+      accessibilityLabel: translate("demoPodcastListScreen.accessibility.publishLabel", {
+        date: formatted,
+      }),
+    }
+  } catch (error) {
+    return { textLabel: "", accessibilityLabel: "" }
+  }
+}
+
+export const getDuration = (episode: Episode) => {
+  const seconds = Number(episode.enclosure.duration)
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor((seconds % 3600) % 60)
+
+  const hDisplay = h > 0 ? `${h}:` : ""
+  const mDisplay = m > 0 ? `${m}:` : ""
+  const sDisplay = s > 0 ? s : ""
+  return {
+    textLabel: hDisplay + mDisplay + sDisplay,
+    accessibilityLabel: translate("demoPodcastListScreen.accessibility.durationLabel", {
+      hours: h,
+      minutes: m,
+      seconds: s,
+    }),
+  }
+}

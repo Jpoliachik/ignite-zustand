@@ -1,50 +1,66 @@
-import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { api } from "../services/api"
-import { Episode, EpisodeModel } from "./Episode"
-import { withSetPropAction } from "./helpers/withSetPropAction"
+import { Episode } from "./Episode"
+import { StateCreator } from "zustand"
+import { RootStore } from "./RootStore"
 
-export const EpisodeStoreModel = types
-  .model("EpisodeStore")
-  .props({
-    episodes: types.array(EpisodeModel),
-    favorites: types.array(types.reference(EpisodeModel)),
-    favoritesOnly: false,
-  })
-  .actions(withSetPropAction)
-  .actions((store) => ({
-    async fetchEpisodes() {
-      const response = await api.getEpisodes()
-      if (response.kind === "ok") {
-        store.setProp("episodes", response.episodes)
-      } else {
-        console.error(`Error fetching episodes: ${JSON.stringify(response)}`)
-      }
-    },
-    addFavorite(episode: Episode) {
-      store.favorites.push(episode)
-    },
-    removeFavorite(episode: Episode) {
-      store.favorites.remove(episode)
-    },
-  }))
-  .views((store) => ({
-    get episodesForList() {
-      return store.favoritesOnly ? store.favorites : store.episodes
-    },
+export interface EpisodeStore {
+  episodes: Episode[]
+  favorites: string[]
+  favoritesOnly: boolean
 
-    hasFavorite(episode: Episode) {
-      return store.favorites.includes(episode)
-    },
-  }))
-  .actions((store) => ({
-    toggleFavorite(episode: Episode) {
-      if (store.hasFavorite(episode)) {
-        store.removeFavorite(episode)
-      } else {
-        store.addFavorite(episode)
-      }
-    },
-  }))
+  fetchEpisodes: () => Promise<void>
+  addFavorite: (episode: Episode) => void
+  removeFavorite: (episode: Episode) => void
+  toggleFavorite: (episode: Episode) => void
+  setFavoritesOnly: (value: boolean) => void
+}
 
-export interface EpisodeStore extends Instance<typeof EpisodeStoreModel> {}
-export interface EpisodeStoreSnapshot extends SnapshotOut<typeof EpisodeStoreModel> {}
+export const createEpisodeSlice: StateCreator<RootStore, [], [], EpisodeStore> = (set, get) => ({
+  episodes: [],
+  favorites: [],
+  favoritesOnly: false,
+
+  fetchEpisodes: async () => {
+    const response = await api.getEpisodes()
+    if (response.kind === "ok") {
+      set({ episodes: response.episodes })
+    } else {
+      console.error(`Error fetching episodes: ${JSON.stringify(response)}`)
+    }
+  },
+  addFavorite: (episode) => set((state) => ({ favorites: [...state.favorites, episode.guid] })),
+  removeFavorite: (episode) =>
+    set((state) => ({ favorites: state.favorites.filter((guid) => guid !== episode.guid) })),
+  toggleFavorite: (episode) => {
+    if (get().favorites.includes(episode.guid)) {
+      get().removeFavorite(episode)
+    } else {
+      get().addFavorite(episode)
+    }
+  },
+  setFavoritesOnly: (value: boolean) => set({ favoritesOnly: value }),
+})
+
+export const episodeStoreSelector = (state: RootStore) => ({
+  episodes: state.episodes,
+  favorites: state.favorites,
+  favoritesOnly: state.favoritesOnly,
+
+  episodesForList: getEpisodesForList(state),
+
+  fetchEpisodes: state.fetchEpisodes,
+  addFavorite: state.addFavorite,
+  removeFavorite: state.removeFavorite,
+  toggleFavorite: state.toggleFavorite,
+  setFavoritesOnly: state.setFavoritesOnly,
+
+  hasFavorite: (episode: Episode) => {
+    return state.favorites.includes(episode.guid)
+  },
+})
+
+export const getEpisodesForList = (store: EpisodeStore) => {
+  return store.favoritesOnly
+    ? store.episodes.filter((a) => store.favorites.includes(a.guid))
+    : store.episodes
+}

@@ -1,6 +1,6 @@
-import { EpisodeModel } from "./Episode"
+import { Episode, getDatePublished, getDuration } from "./Episode"
 
-const data = {
+const episode: Episode = {
   guid: "f91f2ea0-378a-4a90-9a83-d438a0cc32f6",
   title: "RNR 244 - Rewriting GasBuddy in React Native",
   pubDate: "2022-01-20 21:05:36",
@@ -21,19 +21,19 @@ const data = {
       value: "clean",
     },
   },
+  categories: [],
 }
-const episode = EpisodeModel.create(data)
 
 test("publish date format", () => {
-  expect(episode.datePublished.textLabel).toBe("Jan 20, 2022")
-  expect(episode.datePublished.accessibilityLabel).toBe(
+  expect(getDatePublished(episode).textLabel).toBe("Jan 20, 2022")
+  expect(getDatePublished(episode).accessibilityLabel).toBe(
     'demoPodcastListScreen.accessibility.publishLabel {"date":"Jan 20, 2022"}',
   )
 })
 
 test("duration format", () => {
-  expect(episode.duration.textLabel).toBe("42:58")
-  expect(episode.duration.accessibilityLabel).toBe(
+  expect(getDuration(episode).textLabel).toBe("42:58")
+  expect(getDuration(episode).accessibilityLabel).toBe(
     'demoPodcastListScreen.accessibility.durationLabel {"hours":0,"minutes":42,"seconds":58}',
   )
 })

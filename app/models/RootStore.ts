@@ -1,20 +1,18 @@
-import { Instance, SnapshotOut, types } from "mobx-state-tree"
-import { AuthenticationStoreModel } from "./AuthenticationStore"
-import { EpisodeStoreModel } from "./EpisodeStore"
+import { create } from "zustand"
+import { useShallow } from "zustand/react/shallow"
+import {
+  AuthenticationStore,
+  authenticationStoreSelector,
+  createAuthenticationSlice,
+} from "./AuthenticationStore"
+import { EpisodeStore, createEpisodeSlice, episodeStoreSelector } from "./EpisodeStore"
 
-/**
- * A RootStore model.
- */
-export const RootStoreModel = types.model("RootStore").props({
-  authenticationStore: types.optional(AuthenticationStoreModel, {}),
-  episodeStore: types.optional(EpisodeStoreModel, {}),
-})
+export interface RootStore extends AuthenticationStore, EpisodeStore {}
 
-/**
- * The RootStore instance.
- */
-export interface RootStore extends Instance<typeof RootStoreModel> {}
-/**
- * The data of a RootStore.
- */
-export interface RootStoreSnapshot extends SnapshotOut<typeof RootStoreModel> {}
+export const useStore = create<RootStore>()((...a) => ({
+  ...createAuthenticationSlice(...a),
+  ...createEpisodeSlice(...a),
+}))
+
+export const useAuthenticationStore = () => useStore(useShallow(authenticationStoreSelector))
+export const useEpisodeStore = () => useStore(useShallow(episodeStoreSelector))
