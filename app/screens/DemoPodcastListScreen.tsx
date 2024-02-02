@@ -31,17 +31,12 @@ import {
   Toggle,
 } from "../components"
 import { isRTL, translate } from "../i18n"
-import {
-  Episode,
-  getDatePublished,
-  getDuration,
-  getParsedTitleAndSubtitle,
-} from "../models/Episode"
+import { Episode, getDatePublished, getDuration, getParsedTitleAndSubtitle } from "../store/Episode"
 import { DemoTabScreenProps } from "../navigators/DemoNavigator"
 import { colors, spacing } from "../theme"
 import { delay } from "../utils/delay"
 import { openLinkInBrowser } from "../utils/openLinkInBrowser"
-import { useEpisodeStore } from "app/models"
+import { useEpisodeStore } from "app/store"
 
 const ICON_SIZE = 14
 

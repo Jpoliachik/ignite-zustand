@@ -4,8 +4,8 @@ import { Button, Icon, Screen, Text, TextField, TextFieldAccessoryProps } from "
 
 import { AppStackScreenProps } from "../navigators"
 import { colors, spacing } from "../theme"
-import { useAuthenticationStore, useStore } from "app/models"
-import { validationErrorSelector } from "app/models/AuthenticationStore"
+import { useAuthenticationStore, useStore } from "app/store"
+import { validationErrorSelector } from "app/store/AuthenticationStore"
 
 interface LoginScreenProps extends AppStackScreenProps<"Login"> {}
 

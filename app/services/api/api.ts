@@ -9,7 +9,7 @@ import { ApiResponse, ApisauceInstance, create } from "apisauce"
 import Config from "../../config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 import type { ApiConfig, ApiFeedResponse } from "./api.types"
-import { Episode } from "../../models/Episode"
+import { Episode } from "../../store/Episode"
 
 /**
  * Configuring the apisauce instance.

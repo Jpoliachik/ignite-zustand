@@ -24,7 +24,6 @@ export const authenticationStoreSelector = (state: RootStore) => ({
   authToken: state.authToken,
   authEmail: state.authEmail,
   isAuthenticated: isAuthenticatedSelector(state),
-
   setAuthToken: state.setAuthToken,
   setAuthEmail: state.setAuthEmail,
   logout: state.logout,
