@@ -15,11 +15,10 @@ import React from "react"
 import { useColorScheme } from "react-native"
 import * as Screens from "app/screens"
 import Config from "../config"
-import { useStore } from "../store"
+import { useStore, isAuthenticatedSelector } from "../store"
 import { DemoNavigator, DemoTabParamList } from "./DemoNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { colors } from "app/theme"
-import { isAuthenticatedSelector } from "app/store/AuthenticationStore"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator

@@ -31,12 +31,17 @@ import {
   Toggle,
 } from "../components"
 import { isRTL, translate } from "../i18n"
-import { Episode, getDatePublished, getDuration, getParsedTitleAndSubtitle } from "../store/Episode"
 import { DemoTabScreenProps } from "../navigators/DemoNavigator"
 import { colors, spacing } from "../theme"
 import { delay } from "../utils/delay"
 import { openLinkInBrowser } from "../utils/openLinkInBrowser"
-import { useEpisodeStore } from "app/store"
+import {
+  useEpisodeStore,
+  Episode,
+  getDatePublished,
+  getDuration,
+  getParsedTitleAndSubtitle,
+} from "app/store"
 
 const ICON_SIZE = 14
 
@@ -46,16 +51,7 @@ const rnrImage3 = require("../../assets/images/demo/rnr-image-3.png")
 const rnrImages = [rnrImage1, rnrImage2, rnrImage3]
 
 export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = (_props) => {
-  const {
-    episodes,
-    fetchEpisodes,
-    favoritesOnly,
-    episodesForList,
-    toggleFavorite,
-    favorites,
-    setFavoritesOnly,
-    hasFavorite,
-  } = useEpisodeStore()
+  const episodeStore = useEpisodeStore()
 
   const [refreshing, setRefreshing] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
@@ -64,7 +60,7 @@ export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = 
   useEffect(() => {
     ;(async function load() {
       setIsLoading(true)
-      await fetchEpisodes()
+      await episodeStore.fetchEpisodes()
       setIsLoading(false)
     })()
   }, [])
@@ -72,18 +68,16 @@ export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = 
   // simulate a longer refresh, if the refresh is too fast for UX
   async function manualRefresh() {
     setRefreshing(true)
-    await Promise.all([fetchEpisodes(), delay(750)])
+    await Promise.all([episodeStore.fetchEpisodes(), delay(750)])
     setRefreshing(false)
   }
-
-  console.log("PodcastListScreen render")
 
   return (
     <Screen preset="fixed" safeAreaEdges={["top"]} contentContainerStyle={$screenContentContainer}>
       <ListView<Episode>
         contentContainerStyle={$listContentContainer}
-        data={episodesForList.slice()}
-        extraData={favorites.length + episodes.length}
+        data={episodeStore.episodesForList.slice()}
+        extraData={episodeStore.favorites.length + episodeStore.episodes.length}
         refreshing={refreshing}
         estimatedItemSize={177}
         onRefresh={manualRefresh}
@@ -95,12 +89,16 @@ export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = 
               preset="generic"
               style={$emptyState}
               headingTx={
-                favoritesOnly ? "demoPodcastListScreen.noFavoritesEmptyState.heading" : undefined
+                episodeStore.favoritesOnly
+                  ? "demoPodcastListScreen.noFavoritesEmptyState.heading"
+                  : undefined
               }
               contentTx={
-                favoritesOnly ? "demoPodcastListScreen.noFavoritesEmptyState.content" : undefined
+                episodeStore.favoritesOnly
+                  ? "demoPodcastListScreen.noFavoritesEmptyState.content"
+                  : undefined
               }
-              button={favoritesOnly ? "" : undefined}
+              button={episodeStore.favoritesOnly ? "" : undefined}
               buttonOnPress={manualRefresh}
               imageStyle={$emptyStateImage}
               ImageProps={{ resizeMode: "contain" }}
@@ -110,11 +108,11 @@ export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = 
         ListHeaderComponent={
           <View style={$heading}>
             <Text preset="heading" tx="demoPodcastListScreen.title" />
-            {(favoritesOnly || episodesForList.length > 0) && (
+            {(episodeStore.favoritesOnly || episodeStore.episodesForList.length > 0) && (
               <View style={$toggle}>
                 <Toggle
-                  value={favoritesOnly}
-                  onValueChange={() => setFavoritesOnly(!favoritesOnly)}
+                  value={episodeStore.favoritesOnly}
+                  onValueChange={() => episodeStore.setFavoritesOnly(!episodeStore.favoritesOnly)}
                   variant="switch"
                   labelTx="demoPodcastListScreen.onlyFavorites"
                   labelPosition="left"
@@ -128,8 +126,8 @@ export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = 
         renderItem={({ item }) => (
           <EpisodeCard
             episode={item}
-            isFavorite={hasFavorite(item)}
-            onPressFavorite={() => toggleFavorite(item)}
+            isFavorite={episodeStore.hasFavorite(item)}
+            onPressFavorite={() => episodeStore.toggleFavorite(item)}
           />
         )}
       />
